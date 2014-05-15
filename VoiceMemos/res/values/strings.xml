@@ -3,5 +3,7 @@
 
     <string name="app_name">VoiceMemos</string>
     <string name="label_add_memo">Add memo</string>
+    
+	<string name="label_placeholder">Your memos will be\ndisplayed here</string>    
 
 </resources>
