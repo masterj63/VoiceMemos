@@ -11,4 +11,6 @@
 	
 	<string name="label_name_of_memo">Name of memo</string>
 	
+	<string name="error_too_many_similar_memos">Too many similar memos</string>
+	
 </resources>

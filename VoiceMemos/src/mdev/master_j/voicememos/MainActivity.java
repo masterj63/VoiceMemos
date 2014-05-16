@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
 	private static final String KEY_MEMO_NAME = "mdev.master_j.voicememos.MainActivity.KEY_MEMO_NAME";
 	private static final String KEY_MEMO_DATETIME = "mdev.master_j.voicememos.MainActivity.KEY_MEMO_DATETIME";
 
-	private List<Memo> memoList;
+	List<Memo> memoList;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,12 +38,12 @@ public class MainActivity extends Activity {
 		SharedPreferences namePreferences = getSharedPreferences(NAME_PREFERENCE_NAME, MODE_PRIVATE);
 		SharedPreferences datetimePreferences = getSharedPreferences(NAME_PREFERENCE_DATETIME, MODE_PRIVATE);
 
+		memoList = new ArrayList<Memo>();
+
 		if (namePreferences.getAll().isEmpty()) {
 			findViewById(R.id.text_view_placeholder).setVisibility(View.VISIBLE);
 		} else {
 			findViewById(R.id.list_view_memos).setVisibility(View.VISIBLE);
-
-			memoList = new ArrayList<Memo>();
 
 			CustomMemoAdapter adapter = new CustomMemoAdapter();
 
@@ -108,8 +108,8 @@ public class MainActivity extends Activity {
 
 	}
 
-	private class Memo {
-		private String name;
+	class Memo {
+		String name;
 		private Date datetime;
 
 		public Memo(String name, Date datetime) {

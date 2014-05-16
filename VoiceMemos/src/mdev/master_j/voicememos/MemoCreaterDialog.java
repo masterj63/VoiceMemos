@@ -1,5 +1,6 @@
 package mdev.master_j.voicememos;
 
+import mdev.master_j.voicememos.MainActivity.Memo;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -17,6 +18,8 @@ public class MemoCreaterDialog extends DialogFragment {
 	private static final int ERROR_DURATION_MS = 1000;
 	private static final int RECORD_LENGTH_MS = 10 * 1000;
 
+	private MainActivity mainActivity;
+
 	private View dialogView;
 	private AlertDialog dialog;
 	private EditText memoNameEditText;
@@ -25,6 +28,7 @@ public class MemoCreaterDialog extends DialogFragment {
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		mainActivity = (MainActivity) getActivity();
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
@@ -81,14 +85,16 @@ public class MemoCreaterDialog extends DialogFragment {
 		}
 	};
 
-	private Runnable textViewErrorRemoverRunnable = new Runnable() {
-		@Override
-		public void run() {
-			memoNameEditText.setError(null);
-		}
-	};
+	// private Runnable textViewErrorRemoverRunnable = new Runnable() {
+	// @Override
+	// public void run() {
+	// memoNameEditText.setError(null);
+	// }
+	// };
 
 	private TextWatcher textWatcher = new TextWatcher() {
+		boolean changedProgramatically = false;
+
 		@Override
 		public void onTextChanged(CharSequence s, int start, int before, int count) {
 		}
@@ -98,11 +104,50 @@ public class MemoCreaterDialog extends DialogFragment {
 		}
 
 		@Override
-		public void afterTextChanged(Editable s) {
-			if (s.toString().trim().length() == 0)
+		public void afterTextChanged(Editable editable) {
+			if (changedProgramatically) {
+				changedProgramatically = false;
+				return;
+			}
+
+			String name = editable.toString().trim();
+			if (name.length() == 0) {
 				positiveButton.setEnabled(false);
-			else
-				positiveButton.setEnabled(true);
+				return;
+			}
+
+			positiveButton.setEnabled(true);
+
+			boolean duplicateFound = false;
+			for (Memo memo : mainActivity.memoList)
+				if (memo.name.equals(name)) {
+					duplicateFound = true;
+					break;
+				}
+
+			if (!duplicateFound)
+				return;
+
+			for (int i = 1; i <= 999; i++) {
+				String newSuffix = ' ' + String.format("%03d", i);
+				String newName = name + newSuffix;
+
+				boolean newNameIsOk = true;
+				for (Memo memo : mainActivity.memoList)
+					if (memo.name.equals(newName)) {
+						newNameIsOk = false;
+						break;
+					}
+				if (!newNameIsOk)
+					continue;
+
+				changedProgramatically = true;
+				editable.append(newSuffix);
+				return;
+			}
+
+			positiveButton.setEnabled(false);
+			memoNameEditText.setError(getString(R.string.error_too_many_similar_memos));
 		}
 	};
 }
