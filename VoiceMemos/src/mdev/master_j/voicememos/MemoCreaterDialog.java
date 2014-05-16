@@ -130,9 +130,6 @@ public class MemoCreaterDialog extends DialogFragment {
 		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 
-		if (!deleteTmpOutputFile())
-			return;
-
 		mediaRecorder.setOutputFile(tmpOutputFilePath);
 		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
@@ -149,9 +146,9 @@ public class MemoCreaterDialog extends DialogFragment {
 		mediaRecorder.start();
 	}
 
-	private boolean deleteTmpOutputFile() {
+	private void deleteTmpOutputFile() {
 		File outputFile = new File(tmpOutputFilePath);
-		return outputFile.delete();
+		outputFile.delete();
 	}
 
 	private OnClickListener onPositiveButtonClickListener = new OnClickListener() {
@@ -182,6 +179,11 @@ public class MemoCreaterDialog extends DialogFragment {
 
 		@Override
 		public void afterTextChanged(Editable editable) {
+			if (recordState == RecordState.IN_PROGRESS)
+				neutralButton.setText(R.string.button_record_stop);
+			else
+				neutralButton.setText(R.string.button_record_start);
+
 			if (changedProgramatically) {
 				changedProgramatically = false;
 				return;

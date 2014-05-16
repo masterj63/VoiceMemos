@@ -22,12 +22,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
-	private static final String NAME_PREFERENCE_NAME = "mdev.master_j.voicememos.MainActivity.NAME_PREFERENCE_NAME";
-	private static final String NAME_PREFERENCE_DATETIME = "mdev.master_j.voicememos.MainActivity.NAME_PREFERENCE_DATETIME";
-
-	private static final String KEY_MEMO_NAME = "mdev.master_j.voicememos.MainActivity.KEY_MEMO_NAME";
-	private static final String KEY_MEMO_DATETIME = "mdev.master_j.voicememos.MainActivity.KEY_MEMO_DATETIME";
-
 	List<Memo> memoList;
 
 	@Override
@@ -39,21 +33,21 @@ public class MainActivity extends Activity {
 	}
 
 	private void updateMemoList() {
-		SharedPreferences namePreferences = getSharedPreferences(NAME_PREFERENCE_NAME, MODE_PRIVATE);
-		SharedPreferences datetimePreferences = getSharedPreferences(NAME_PREFERENCE_DATETIME, MODE_PRIVATE);
+		SharedPreferences pp = getPreferences(MODE_PRIVATE);
 
 		memoList = new ArrayList<Memo>();
 
-		if (namePreferences.getAll().isEmpty()) {
+		if (pp.getAll().isEmpty()) {
+			findViewById(R.id.list_view_memos).setVisibility(View.INVISIBLE);
 			findViewById(R.id.text_view_placeholder).setVisibility(View.VISIBLE);
 		} else {
 			findViewById(R.id.list_view_memos).setVisibility(View.VISIBLE);
+			findViewById(R.id.text_view_placeholder).setVisibility(View.INVISIBLE);
 
 			CustomMemoAdapter adapter = new CustomMemoAdapter();
 
-			for (String key : namePreferences.getAll().keySet()) {
-				String name = namePreferences.getString(KEY_MEMO_NAME, "");
-				Long datetimeMS = datetimePreferences.getLong(KEY_MEMO_DATETIME, 0L);
+			for (String name : pp.getAll().keySet()) {
+				Long datetimeMS = pp.getLong(name, 0L);
 				Date date = new Date(datetimeMS);
 
 				memoList.add(new Memo(name, date));
@@ -70,6 +64,9 @@ public class MainActivity extends Activity {
 	}
 
 	void saveNewMemo(String title) {
+		SharedPreferences.Editor editor = getPreferences(MODE_PRIVATE).edit();
+		editor.putLong(title, System.currentTimeMillis());
+		editor.commit();
 		updateMemoList();
 	}
 
@@ -111,9 +108,9 @@ public class MainActivity extends Activity {
 			// memoView.findViewById(R.id.time_memo);
 			// TODO fix that
 
-			return super.getView(position, convertView, parent);
+			// return super.getView(position, convertView, parent);
+			return memoView;
 		}
-
 	}
 
 	class Memo {
