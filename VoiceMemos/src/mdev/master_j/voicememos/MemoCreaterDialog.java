@@ -11,12 +11,16 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 
 public class MemoCreaterDialog extends DialogFragment {
-	private static final int ERROR_DURATION_MS = 1000;
-	private static final int RECORD_LENGTH_MS = 10 * 1000;
+	private static final int DURATION_ERROR_MS = 1000;
+	private static final int DURATION_RECORD_MS = 10 * 1000;
+	private static final int DURATION_PROGRESSBAR_FADE_IN_MS = 1000;
 
 	private MainActivity mainActivity;
 
@@ -25,6 +29,7 @@ public class MemoCreaterDialog extends DialogFragment {
 	private EditText memoNameEditText;
 
 	private Button positiveButton;
+	private Button neutralButton;
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -56,7 +61,7 @@ public class MemoCreaterDialog extends DialogFragment {
 		positiveButton = dialog.getButton(Dialog.BUTTON_POSITIVE);
 		positiveButton.setOnClickListener(onPositiveButtonClickListener);
 
-		Button neutralButton = dialog.getButton(Dialog.BUTTON_NEUTRAL);
+		neutralButton = dialog.getButton(Dialog.BUTTON_NEUTRAL);
 		neutralButton.setOnClickListener(onNeutralButtonClickListener);
 
 		textWatcher.afterTextChanged(memoNameEditText.getText());
@@ -65,32 +70,24 @@ public class MemoCreaterDialog extends DialogFragment {
 	private OnClickListener onNeutralButtonClickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			// TODO recording
+			neutralButton.setText(R.string.button_record_stop);
+
+			ProgressBar p = (ProgressBar) dialogView.findViewById(R.id.progress_bar_record);
+
+			Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
+			fadeInAnimation.setDuration(DURATION_PROGRESSBAR_FADE_IN_MS);
+			fadeInAnimation.setStartOffset(0);
+			p.startAnimation(fadeInAnimation);
+			p.findViewById(R.id.progress_bar_record).setVisibility(View.VISIBLE);
 		}
 	};
 
 	private OnClickListener onPositiveButtonClickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			// String memoNameString =
-			// memoNameEditText.getText().toString().trim();
-			//
-			// if (memoNameString.length() == 0) {
-			// memoNameEditText.setError("Cannot be empty");
-			// memoNameEditText.removeCallbacks(textViewErrorRemoverRunnable);
-			// memoNameEditText.postDelayed(textViewErrorRemoverRunnable,
-			// ERROR_DURATION_MS);
-			// return;
-			// }
+			// TODO save memo
 		}
 	};
-
-	// private Runnable textViewErrorRemoverRunnable = new Runnable() {
-	// @Override
-	// public void run() {
-	// memoNameEditText.setError(null);
-	// }
-	// };
 
 	private TextWatcher textWatcher = new TextWatcher() {
 		boolean changedProgramatically = false;
