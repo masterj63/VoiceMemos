@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -74,7 +75,8 @@ public class MainActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.item_add_memo) {
-
+			DialogFragment memoCreatorDialog = new MemoCreaterDialog();
+			memoCreatorDialog.show(getFragmentManager(), "");
 		}
 		return super.onOptionsItemSelected(item);
 	}
