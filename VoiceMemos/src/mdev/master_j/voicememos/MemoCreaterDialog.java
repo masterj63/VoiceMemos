@@ -12,14 +12,16 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 public class MemoCreaterDialog extends DialogFragment {
 	private static final int ERROR_DURATION_MS = 1000;
+	private static final int RECORD_LENGTH_MS = 10 * 1000;
 
 	private View dialogView;
 	private AlertDialog dialog;
 	private EditText memoNameEditText;
+
+	private Button positiveButton;
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -47,32 +49,35 @@ public class MemoCreaterDialog extends DialogFragment {
 		memoNameEditText = (EditText) dialogView.findViewById(R.id.name_memo_dialog);
 		memoNameEditText.addTextChangedListener(textWatcher);
 
-		Button positiveButton = dialog.getButton(Dialog.BUTTON_POSITIVE);
+		positiveButton = dialog.getButton(Dialog.BUTTON_POSITIVE);
 		positiveButton.setOnClickListener(onPositiveButtonClickListener);
 
 		Button neutralButton = dialog.getButton(Dialog.BUTTON_NEUTRAL);
 		neutralButton.setOnClickListener(onNeutralButtonClickListener);
+
+		textWatcher.afterTextChanged(memoNameEditText.getText());
 	}
 
 	private OnClickListener onNeutralButtonClickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			// TODO recording
-			Toast.makeText(getActivity(), "i am recording", Toast.LENGTH_SHORT).show();
 		}
 	};
 
 	private OnClickListener onPositiveButtonClickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			String memoNameString = memoNameEditText.getText().toString().trim();
-
-			if (memoNameString.length() == 0) {
-				memoNameEditText.setError("Cannot be empty");
-				memoNameEditText.removeCallbacks(textViewErrorRemoverRunnable);
-				memoNameEditText.postDelayed(textViewErrorRemoverRunnable, ERROR_DURATION_MS);
-				return;
-			}
+			// String memoNameString =
+			// memoNameEditText.getText().toString().trim();
+			//
+			// if (memoNameString.length() == 0) {
+			// memoNameEditText.setError("Cannot be empty");
+			// memoNameEditText.removeCallbacks(textViewErrorRemoverRunnable);
+			// memoNameEditText.postDelayed(textViewErrorRemoverRunnable,
+			// ERROR_DURATION_MS);
+			// return;
+			// }
 		}
 	};
 
@@ -94,6 +99,10 @@ public class MemoCreaterDialog extends DialogFragment {
 
 		@Override
 		public void afterTextChanged(Editable s) {
+			if (s.toString().trim().length() == 0)
+				positiveButton.setEnabled(false);
+			else
+				positiveButton.setEnabled(true);
 		}
 	};
 }
