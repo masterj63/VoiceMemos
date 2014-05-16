@@ -31,6 +31,8 @@ public class MemoCreaterDialog extends DialogFragment {
 	private Button positiveButton;
 	private Button neutralButton;
 
+	ProgressBar recordProgressBar;
+
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		mainActivity = (MainActivity) getActivity();
@@ -47,13 +49,14 @@ public class MemoCreaterDialog extends DialogFragment {
 		builder.setNeutralButton(R.string.button_record_start, null);
 
 		dialog = builder.create();
-		// dialog.setOnShowListener(new OnDialogShowListener(dialog));
 		return dialog;
 	}
 
 	@Override
-	public void onResume() {
-		super.onResume();
+	public void onStart() {
+		super.onStart();
+
+		recordProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar_record);
 
 		memoNameEditText = (EditText) dialogView.findViewById(R.id.name_memo_dialog);
 		memoNameEditText.addTextChangedListener(textWatcher);
@@ -72,13 +75,11 @@ public class MemoCreaterDialog extends DialogFragment {
 		public void onClick(View v) {
 			neutralButton.setText(R.string.button_record_stop);
 
-			ProgressBar p = (ProgressBar) dialogView.findViewById(R.id.progress_bar_record);
-
 			Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
 			fadeInAnimation.setDuration(DURATION_PROGRESSBAR_FADE_IN_MS);
 			fadeInAnimation.setStartOffset(0);
-			p.startAnimation(fadeInAnimation);
-			p.findViewById(R.id.progress_bar_record).setVisibility(View.VISIBLE);
+			recordProgressBar.startAnimation(fadeInAnimation);
+			recordProgressBar.findViewById(R.id.progress_bar_record).setVisibility(View.VISIBLE);
 		}
 	};
 
