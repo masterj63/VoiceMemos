@@ -4,6 +4,11 @@
     <string name="app_name">VoiceMemos</string>
     <string name="label_add_memo">Add memo</string>
     
-	<string name="label_placeholder">Your memos will be\ndisplayed here</string>    
-
+	<string name="label_placeholder">Your memos will be\ndisplayed here</string>
+	
+	<string name="button_record_start">Start record</string>
+	<string name="button_record_stop">Stop record</string>
+	
+	<string name="label_name_of_memo">Name of memo</string>
+	
 </resources>
