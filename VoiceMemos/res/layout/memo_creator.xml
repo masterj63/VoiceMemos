@@ -5,7 +5,7 @@
     android:orientation="vertical" >
 
     <EditText
-        android:id="@+id/d_name_memo"
+        android:id="@+id/name_memo_dialog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/label_name_of_memo" />

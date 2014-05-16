@@ -17,7 +17,6 @@
         android:id="@+id/list_view_memos"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone" >
-    </ListView>
+        android:visibility="gone" />
 
 </FrameLayout>
