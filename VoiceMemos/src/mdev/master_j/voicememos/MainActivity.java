@@ -35,6 +35,10 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+		updateMemoList();
+	}
+
+	private void updateMemoList() {
 		SharedPreferences namePreferences = getSharedPreferences(NAME_PREFERENCE_NAME, MODE_PRIVATE);
 		SharedPreferences datetimePreferences = getSharedPreferences(NAME_PREFERENCE_DATETIME, MODE_PRIVATE);
 
@@ -63,6 +67,10 @@ public class MainActivity extends Activity {
 
 			// TODO OnItemClickListener
 		}
+	}
+
+	void saveNewMemo(String title) {
+		updateMemoList();
 	}
 
 	@Override

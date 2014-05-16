@@ -1,7 +1,6 @@
 package mdev.master_j.voicememos;
 
 import java.io.File;
-import java.io.IOException;
 
 import mdev.master_j.voicememos.MainActivity.Memo;
 import android.app.AlertDialog;
@@ -25,21 +24,28 @@ import android.widget.Toast;
 
 public class MemoCreaterDialog extends DialogFragment {
 	private static final int PERIOD_RECORD_PROGRESS_UPDATE_MS = 200;
-	private static final int DURATION_RECORD_MS = 10 * 1000;
+	private static final int DURATION_RECORD_MS = 4 * 1000;
 	private static final int DURATION_PROGRESSBAR_FADE_IN_MS = 1000;
+
+	private static final String FILENAME_RECORD_TMP = " tmp ";
 
 	private MainActivity mainActivity;
 
+	private String tmpOutputFilePath;
+
 	private View dialogView;
 	private AlertDialog dialog;
+
 	private EditText memoNameEditText;
 
 	private Button positiveButton;
 	private Button neutralButton;
 
+	private ProgressBar recordProgressBar;
+
 	private RecordState recordState = RecordState.IDLE;
 
-	ProgressBar recordProgressBar;
+	private MediaRecorder mediaRecorder;
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -51,7 +57,7 @@ public class MemoCreaterDialog extends DialogFragment {
 		dialogView = inflater.inflate(R.layout.memo_creator, null, false);
 
 		builder.setView(dialogView);
-		builder.setTitle("title");
+		builder.setTitle(R.string.label_add_memo);
 		builder.setNegativeButton(android.R.string.cancel, null);
 		builder.setPositiveButton(android.R.string.ok, null);
 		builder.setNeutralButton(R.string.button_record_start, null);
@@ -63,6 +69,8 @@ public class MemoCreaterDialog extends DialogFragment {
 	@Override
 	public void onStart() {
 		super.onStart();
+
+		tmpOutputFilePath = mainActivity.getFilesDir() + "/" + FILENAME_RECORD_TMP;
 
 		recordProgressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar_record);
 		recordProgressBar.setMax(DURATION_RECORD_MS);
@@ -80,6 +88,12 @@ public class MemoCreaterDialog extends DialogFragment {
 		textWatcher.afterTextChanged(memoNameEditText.getText());
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		deleteTmpOutputFile();
+	}
+
 	private OnClickListener onNeutralButtonClickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
@@ -88,8 +102,12 @@ public class MemoCreaterDialog extends DialogFragment {
 				onStartRecord();
 				break;
 			case IN_PROGRESS:
+				// this will automatically lead to stopping a record, @see
+				// recordProgressUpdaterRunnable
+				recordState = RecordState.RECORDED;
 				break;
 			case RECORDED:
+				onStartRecord();
 				break;
 			default:
 				Log.d("mj", "recordState==null?");
@@ -108,28 +126,18 @@ public class MemoCreaterDialog extends DialogFragment {
 		recordProgressBar.startAnimation(fadeInAnimation);
 		recordProgressBar.findViewById(R.id.progress_bar_record).setVisibility(View.VISIBLE);
 
-		MediaRecorder recorder = new MediaRecorder();
-		recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-		recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+		mediaRecorder = new MediaRecorder();
+		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 
-		String path = mainActivity.getFilesDir() + "/" + memoNameEditText.getText().toString();
-		File outputFile = new File(path);
-		if (outputFile.exists())
-			outputFile.delete();
-		try {
-			outputFile.createNewFile();
-		} catch (IOException e) {
-			Toast.makeText(mainActivity, e.toString(), Toast.LENGTH_LONG).show();
-			Log.e("mj", e.toString());
-			e.printStackTrace();
+		if (!deleteTmpOutputFile())
 			return;
-		}
-		recorder.setOutputFile(path);
 
-		recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+		mediaRecorder.setOutputFile(tmpOutputFilePath);
+		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
 		try {
-			recorder.prepare();
+			mediaRecorder.prepare();
 		} catch (Throwable e) {
 			Toast.makeText(mainActivity, e.toString(), Toast.LENGTH_LONG).show();
 			Log.e("mj", e.toString());
@@ -138,13 +146,26 @@ public class MemoCreaterDialog extends DialogFragment {
 		}
 
 		new Thread(recordProgressUpdaterRunnable).start();
-		recorder.start();
+		mediaRecorder.start();
+	}
+
+	private boolean deleteTmpOutputFile() {
+		File outputFile = new File(tmpOutputFilePath);
+		return outputFile.delete();
 	}
 
 	private OnClickListener onPositiveButtonClickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			// TODO save memo
+			String memoName = memoNameEditText.getText().toString();
+			String memoAudioFile = mainActivity.getFilesDir() + "/" + memoName;
+
+			File tmpFile = new File(tmpOutputFilePath);
+			File newFile = new File(memoAudioFile);
+			tmpFile.renameTo(newFile);
+
+			mainActivity.saveNewMemo(memoNameEditText.getText().toString());
+			dismiss();
 		}
 	};
 
@@ -172,7 +193,8 @@ public class MemoCreaterDialog extends DialogFragment {
 				return;
 			}
 
-			positiveButton.setEnabled(true);
+			if (recordState == RecordState.RECORDED)
+				positiveButton.setEnabled(true);
 
 			boolean duplicateFound = false;
 			for (Memo memo : mainActivity.memoList)
@@ -212,16 +234,29 @@ public class MemoCreaterDialog extends DialogFragment {
 		public void run() {
 			try {
 				int progress = 0;
-				while (progress <= DURATION_RECORD_MS) {
+				while (progress <= DURATION_RECORD_MS && recordState == RecordState.IN_PROGRESS) {
 					progress += PERIOD_RECORD_PROGRESS_UPDATE_MS;
 					recordProgressBar.setProgress(progress);
 					Thread.sleep(PERIOD_RECORD_PROGRESS_UPDATE_MS);
 				}
+				recordState = RecordState.RECORDED;
+
+				dialogView.post(new Runnable() {
+					@Override
+					public void run() {
+						textWatcher.afterTextChanged(memoNameEditText.getText());
+					}
+				});
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 				Log.e("mj", e.toString());
+				recordState = RecordState.IDLE;
+				deleteTmpOutputFile();
+			} finally {
+				mediaRecorder.stop();
+				mediaRecorder.release();
+				mediaRecorder = null;
 			}
-			// TODO on finish
 		}
 	};
 
