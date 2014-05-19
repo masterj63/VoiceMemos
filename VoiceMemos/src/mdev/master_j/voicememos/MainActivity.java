@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.app.DialogFragment;
@@ -102,11 +103,11 @@ public class MainActivity extends Activity {
 			TextView memoName = (TextView) memoView.findViewById(R.id.name_memo);
 			memoName.setText(memo.name);
 
-			String memoDateString = new SimpleDateFormat("dd MMM yyyy").format(memo.datetime);
+			String memoDateString = new SimpleDateFormat("dd MMM yyyy", Locale.US).format(memo.datetime);
 			TextView memoDate = (TextView) memoView.findViewById(R.id.date_memo);
 			memoDate.setText(memoDateString);
 
-			String memoTimeString = new SimpleDateFormat("HH:mm:ss").format(memo.datetime);
+			String memoTimeString = new SimpleDateFormat("HH:mm:ss", Locale.US).format(memo.datetime);
 			TextView memoTime = (TextView) memoView.findViewById(R.id.time_memo);
 			memoTime.setText(memoTimeString);
 
@@ -123,7 +124,6 @@ public class MainActivity extends Activity {
 			this.name = name;
 			this.datetime = datetime;
 		}
-
 	}
 
 	private Comparator<Memo> nameMemoComparator = new Comparator<Memo>() {
