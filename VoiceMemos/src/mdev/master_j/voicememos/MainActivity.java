@@ -1,5 +1,6 @@
 package mdev.master_j.voicememos;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -101,14 +102,14 @@ public class MainActivity extends Activity {
 			TextView memoName = (TextView) memoView.findViewById(R.id.name_memo);
 			memoName.setText(memo.name);
 
+			String memoDateString = new SimpleDateFormat("dd MMM yyyy").format(memo.datetime);
 			TextView memoDate = (TextView) memoView.findViewById(R.id.date_memo);
-			memoDate.setText(memo.datetime.toString());
+			memoDate.setText(memoDateString);
 
-			// TextView memoTime = (TextView)
-			// memoView.findViewById(R.id.time_memo);
-			// TODO fix that
+			String memoTimeString = new SimpleDateFormat("HH:mm:ss").format(memo.datetime);
+			TextView memoTime = (TextView) memoView.findViewById(R.id.time_memo);
+			memoTime.setText(memoTimeString);
 
-			// return super.getView(position, convertView, parent);
 			return memoView;
 		}
 	}
