@@ -26,6 +26,8 @@ import android.widget.TextView;
 public class MainActivity extends Activity {
 	List<Memo> memoList;
 
+	private SortBy sortBy = SortBy.NAME;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -56,7 +58,14 @@ public class MainActivity extends Activity {
 				adapter.add("");
 			}
 
-			Collections.sort(memoList, nameMemoComparator);
+			switch (sortBy) {
+			case DATETIME:
+				Collections.sort(memoList, datetimeMemoComparator);
+				break;
+			case NAME:
+				Collections.sort(memoList, nameMemoComparator);
+				break;
+			}
 
 			ListView listView = (ListView) findViewById(R.id.list_view_memos);
 			listView.setAdapter(adapter);
@@ -81,10 +90,17 @@ public class MainActivity extends Activity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == R.id.item_add_memo) {
+		switch (item.getItemId()) {
+		case R.id.item_add_memo:
 			DialogFragment memoCreatorDialog = new MemoCreaterDialog();
 			memoCreatorDialog.show(getFragmentManager(), "");
+			break;
+		case R.id.item_sort_by:
+			sortBy = sortBy.next();
+			updateMemoList();
+			break;
 		}
+
 		return super.onOptionsItemSelected(item);
 	}
 
@@ -139,4 +155,12 @@ public class MainActivity extends Activity {
 			return memo1.datetime.compareTo(memo2.datetime);
 		}
 	};
+
+	private enum SortBy {
+		DATETIME, NAME;
+
+		SortBy next() {
+			return values()[(1 + ordinal()) % values().length];
+		}
+	}
 }
