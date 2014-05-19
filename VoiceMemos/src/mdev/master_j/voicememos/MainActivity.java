@@ -12,21 +12,29 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	List<Memo> memoList;
 
 	private SortBy sortBy = SortBy.NAME;
+
+	private MediaPlayer mediaPlayer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +78,7 @@ public class MainActivity extends Activity {
 			ListView listView = (ListView) findViewById(R.id.list_view_memos);
 			listView.setAdapter(adapter);
 
-			// TODO OnItemClickListener
+			listView.setOnItemClickListener(onItemClickListener);
 		}
 	}
 
@@ -139,6 +147,50 @@ public class MainActivity extends Activity {
 			super();
 			this.name = name;
 			this.datetime = datetime;
+		}
+	}
+
+	private OnItemClickListener onItemClickListener = new OnItemClickListener() {
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+			String audioName = memoList.get(position).name;
+
+			if (mediaPlayer != null) {
+				mediaPlayer.stop();
+				mediaPlayer.reset();
+			}
+
+			mediaPlayer = new MediaPlayer();
+			mediaPlayer.setAudioStreamType(AudioManager.MODE_NORMAL);
+			try {
+				mediaPlayer.setDataSource(getFilesDir() + "/" + audioName);
+			} catch (Throwable e) {
+				e.printStackTrace();
+				Log.d("mj", "somithing wrong with datasource");
+				Toast.makeText(MainActivity.this, "error", Toast.LENGTH_SHORT).show();
+				return;
+			}
+
+			try {
+				mediaPlayer.prepare();
+			} catch (Throwable e) {
+				e.printStackTrace();
+				Log.d("mj", "somithing wrong with mplayer");
+				Toast.makeText(MainActivity.this, "error", Toast.LENGTH_SHORT).show();
+				return;
+			}
+
+			mediaPlayer.start();
+		}
+	};
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		if (mediaPlayer != null) {
+			mediaPlayer.stop();
+			mediaPlayer.release();
+			mediaPlayer = null;
 		}
 	}
 
